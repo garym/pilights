@@ -73,3 +73,17 @@ Once back up, tail the log and then plug in your fadecandy to get the device ser
 ```bash
 tail -f /var/log/fcserver.log
 ```
+
+This should show something like:
+```
+[1462395828:0326] NOTICE: Server listening on *:7890
+USB device Fadecandy (Serial# XXXXXXXXXXXXXXXX, Version 1.07) has no matching configuration. Not using it.
+```
+
+and you should edit ```/usr/local/etc/fcserver.json``` to specify that as the serial string for the device.
+
+Additional setup for the Raspberry Pi might include setting up wireless connectivity:
+
+ * Add a wireless dongle - using the Desktop's WiFi Config may be easiest for this.
+ * Enabling ssh via ```sudo raspi-config```
+ * Allowing ssh by computer name through ```sudo apt-get -y install netatalk
