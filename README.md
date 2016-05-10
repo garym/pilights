@@ -86,4 +86,13 @@ Additional setup for the Raspberry Pi might include setting up wireless connecti
 
  * Add a wireless dongle - using the Desktop's WiFi Config may be easiest for this.
  * Enabling ssh via ```sudo raspi-config```
- * Allowing ssh by computer name through ```sudo apt-get -y install netatalk
+ * Allowing ssh by computer name through ```sudo apt-get -y install netatalk```
+
+Given an appropriate circuit, you should now be able to run the example programs from the fadecandy project. For instance:
+
+```bash
+cd fadecandy/examples/python
+python chase.py
+```
+
+Obviously I am choosing a Python example as it is my intention to use Python for this project.
