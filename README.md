@@ -86,4 +86,4 @@ Additional setup for the Raspberry Pi might include setting up wireless connecti
 
  * Add a wireless dongle - using the Desktop's WiFi Config may be easiest for this.
  * Enabling ssh via ```sudo raspi-config```
- * Allowing ssh by computer name through ```sudo apt-get -y install netatalk
+ * Allowing ssh by computer name through ```sudo apt-get -y install netatalk```
