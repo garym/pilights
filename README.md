@@ -33,12 +33,12 @@ The serial for the device is a placeholder which we will discover in a later ste
 The map describes the mapping of each of the 8 outputs from the fadecandy to the pixels being controlled.
 In the initial version of the exhibit we are using 6 of the outputs to control:
 
- 1: an 8 pixel stick
- 2: a 1/4 circle of 1
- 3: a 1/4 circle of 1
- 4: a 1/4 circle of 1
- 5: a 1/4 circle of 1
- 6: an 8 pixel stick
+ 1. an 8 pixel stick
+ 1. a 1/4 circle of 12
+ 1. a 1/4 circle of 12
+ 1. a 1/4 circle of 12
+ 1. a 1/4 circle of 12
+ 1. an 8 pixel stick
 
 The map contained will allow us to treat all the pixels as a continuous range from 0 to 75 so we don't have to
 consider an offset.
