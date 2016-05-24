@@ -21,6 +21,7 @@ ARC4_PIXELS = list(range(ARC4_START,
 OUT_STREAM = list(range(OUTPUT_STREAM_START,
                         OUTPUT_STREAM_START + STICK_LENGTH))
 
+TIMESTEP = 0.25
 
 from collections import Counter
 
@@ -54,7 +55,7 @@ except ImportError:
 from RPi import GPIO
 
 DEFAULT_SERVER = 'localhost:7890'
-DEFAULT_DETECTOR_PIN = 2
+DEFAULT_DETECTOR_PIN = 4
 
 logger = logging.getLogger()
 track_state = deque([0] * (STICK_LENGTH + ARC_LENGTH * 4 + STICK_LENGTH))
@@ -76,7 +77,9 @@ def inject(channel):
 
 
 def render(client):
-    pass
+    if client is not None:
+        pixels = [(255, 139, 57) if p else (0, 0, 0) for p in track_state]
+        client.put_pixels(pixels)
 
 
 def process_args():
@@ -114,10 +117,10 @@ def setup_gpio(channel, callback):
 
 
 def main(client):
-    for i in range(100):
+    while True:
         timestep()
         render(client)
-        time.sleep(0.5)
+        time.sleep(TIMESTEP)
 
 
 if __name__ == '__main__':
