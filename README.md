@@ -28,8 +28,20 @@ make
 sudo mv fcserver /usr/local/bin/
 ```
 
-Now create the json config in ```/usr/local/etc/fcserver.json``` with something like the following (needs updating
-for the actual layout once determined):
+Now create the json config in ```/usr/local/etc/fcserver.json``` with something like the following.
+The serial for the device is a placeholder which we will discover in a later step.
+The map describes the mapping of each of the 8 outputs from the fadecandy to the pixels being controlled.
+In the initial version of the exhibit we are using 6 of the outputs to control:
+
+ 1: an 8 pixel stick
+ 2: a 1/4 circle of 1
+ 3: a 1/4 circle of 1
+ 4: a 1/4 circle of 1
+ 5: a 1/4 circle of 1
+ 6: an 8 pixel stick
+
+The map contained will allow us to treat all the pixels as a continuous range from 0 to 75 so we don't have to
+consider an offset.
 
 ```json
 {
@@ -45,14 +57,14 @@ for the actual layout once determined):
       "type": "fadecandy",
       "serial": "ABCDEFGHIJKLMNOP",
       "map": [
-        [0, 0, 0, 60],
-        [0, 60, 64, 60],
-        [0, 120, 128, 60],
-        [0, 180, 192, 60],
-        [0, 240, 256, 60],
-        [0, 300, 320, 60],
-        [0, 360, 384, 60],
-        [0, 420, 448, 60]
+        [0, 0, 0, 8],
+        [0, 8, 64, 15],
+        [0, 23, 128, 15],
+        [0, 38, 192, 15],
+        [0, 53, 256, 15],
+        [0, 68, 320, 8],
+        [0, 76, 384, 60],
+        [0, 136, 448, 60]
       ]
     }
   ]
@@ -87,7 +99,6 @@ Additional setup for the Raspberry Pi might include setting up wireless connecti
  * Add a wireless dongle - using the Desktop's WiFi Config may be easiest for this.
  * Enabling ssh via ```sudo raspi-config```
  * Allowing ssh by computer name through ```sudo apt-get -y install netatalk```
-=======
 
 Given an appropriate circuit, you should now be able to run the example programs from the fadecandy project. For instance:
 
