@@ -45,19 +45,26 @@ class State(object):
 import argparse
 from collections import deque
 import logging
+import sys
 import time
+
+from RPi import GPIO
+
+logger = logging.getLogger()
 
 try:
     import opc
-except ImportError:
-    opc = None
+except ImportError as e:
+    logger.error(
+        "Missing opc module. You may have forgotten to init submodules. "
+        "See README.md for details."
+    )
+    sys.exit(1)
 
-from RPi import GPIO
 
 DEFAULT_SERVER = 'localhost:7890'
 DEFAULT_DETECTOR_PIN = 4
 
-logger = logging.getLogger()
 track_state = deque([0] * (STICK_LENGTH + ARC_LENGTH * 4 + STICK_LENGTH))
 
 
@@ -77,9 +84,8 @@ def inject(channel):
 
 
 def render(client):
-    if client is not None:
-        pixels = [(255, 139, 57) if p else (0, 0, 0) for p in track_state]
-        client.put_pixels(pixels)
+    pixels = [(255, 139, 57) if p else (0, 0, 0) for p in track_state]
+    client.put_pixels(pixels)
 
 
 def process_args():
@@ -98,11 +104,7 @@ def process_args():
 
 
 def setup_fc(server):
-    client = opc.Client(server) if opc is not None else None
-    if client is None:
-        logger.info(
-            "No FadeCandy software installed - running without lightshow"
-        )
+    client = opc.Client(server)
     return client
 
 
