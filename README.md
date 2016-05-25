@@ -14,14 +14,22 @@ sudo python3 detector.py
 
 # Setup
 
-This section documents the expected requirements for setting up the raspberry pi for the neopixel control to work.
-For the moment this is based on
-[this instructable](http://www.instructables.com/id/RasPi-w-Fadecandy-driver-WS2811WS2812-Addressable-/?ALLSTEPS)
+Ensure git is installed:
 
 ```bash
 sudo apt-get -y install git
+```
 
-git clone git://github.com/scanlime/fadecandy
+Clone this repository if you do not already have a copy and initialise the FadeCandy submodule:
+
+```bash
+git clone git://github.com/garym/pilights
+cd pilights
+git submodule update --init
+```
+
+build the FadeCandy server
+```bash
 cd fadecandy/server
 make submodules
 make
@@ -96,7 +104,7 @@ and you should edit ```/usr/local/etc/fcserver.json``` to specify that as the se
 
 Additional setup for the Raspberry Pi might include setting up wireless connectivity:
 
- * Add a wireless dongle - using the Desktop's WiFi Config may be easiest for this.
+ * Add a wireless dongle - using the Desktop's WiFi Config may be easiest for this but it is also possible to edit the ```/etc/wpa_supplicant/wpa_supplicant.conf``` by hand.
  * Enabling ssh via ```sudo raspi-config```
  * Allowing ssh by computer name through ```sudo apt-get -y install netatalk```
 
@@ -107,4 +115,7 @@ cd fadecandy/examples/python
 python chase.py
 ```
 
-Obviously I am choosing a Python example as it is my intention to use Python for this project.
+The current test pattern can be run through:
+```bash
+python display.py
+```
