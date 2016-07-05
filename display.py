@@ -1,50 +1,7 @@
-
-STICK_LENGTH = 8
-ARC_LENGTH = 15
-INPUT_STREAM_START = 0
-ARC1_START = INPUT_STREAM_START + STICK_LENGTH
-ARC2_START = ARC1_START + ARC_LENGTH
-ARC3_START = ARC2_START + ARC_LENGTH
-ARC4_START = ARC3_START + ARC_LENGTH
-OUTPUT_STREAM_START = ARC4_START + ARC_LENGTH
-
-IN_STREAM = list(range(INPUT_STREAM_START,
-                       INPUT_STREAM_START + STICK_LENGTH))
-ARC1_PIXELS = list(range(ARC1_START,
-                         ARC1_START + ARC_LENGTH))
-ARC2_PIXELS = list(range(ARC2_START,
-                         ARC2_START + ARC_LENGTH))
-ARC3_PIXELS = list(range(ARC3_START,
-                         ARC3_START + ARC_LENGTH))
-ARC4_PIXELS = list(range(ARC4_START,
-                         ARC4_START + ARC_LENGTH))
-OUT_STREAM = list(range(OUTPUT_STREAM_START,
-                        OUTPUT_STREAM_START + STICK_LENGTH))
-
-TIMESTEP = 0.25
-
-from collections import Counter
-
-
-class State(object):
-    def __init__(self):
-        self.in_stream = self.init_counter(IN_STREAM)
-        arc1 = self.init_counter(ARC1_PIXELS)
-        arc2 = self.init_counter(ARC2_PIXELS)
-        arc3 = self.init_counter(ARC3_PIXELS)
-        arc4 = self.init_counter(ARC4_PIXELS)
-        self.circle = arc1 + arc2 + arc3 + arc4
-        self.out_stream = self.init_counter(OUT_STREAM)
-
-    def init_counter(self, positions):
-        return Counter({i: 0 for i in positions})
-
-    def inject_pixel(self):
-        self.in_stream
-
 import argparse
 from collections import deque
 import logging
+import random
 import sys
 import time
 
@@ -62,15 +19,98 @@ except ImportError as e:
     sys.exit(1)
 
 
+STICK_LENGTH = 8
+ARC_LENGTH = 15
+
+TIMESTEP = 0.25
+
 DEFAULT_SERVER = 'localhost:7890'
 DEFAULT_DETECTOR_PIN = 4
 
-track_state = deque([0] * (STICK_LENGTH + ARC_LENGTH * 4 + STICK_LENGTH))
+track_in_path = deque([0] * STICK_LENGTH)
+track_circle_top_path = deque([0] * ARC_LENGTH)
+track_circle_bottom_path = deque([0] * 3 * ARC_LENGTH)
+track_out_path = deque([0] * STICK_LENGTH)
+
+track_state = [0] * (STICK_LENGTH + ARC_LENGTH * 4 + STICK_LENGTH)
+
+premesis_track_in_path = deque([0] * STICK_LENGTH)
+premesis_track_circle_top_path = deque([0] * ARC_LENGTH)
+premesis_track_circle_bottom_path = deque([0] * 3 * ARC_LENGTH)
+premesis_track_out_path = deque([0] * STICK_LENGTH)
+
+premesis_track_state = [0] * (STICK_LENGTH + ARC_LENGTH * 4 + STICK_LENGTH)
+
+USER_TRACK_MAP_1 = {i: i for i in range(38)}
+
+USER_TRACK_MAP_2 = {i: i for i in range(8)}
+USER_TRACK_MAP_2.update({i + 8: 67 - i for i in range(30)})
+
+BUILDING_TRACK_MAP_1 = {i: i + 23 for i in range(30)}
+BUILDING_TRACK_MAP_1.update({i - 38: i for i in range(68, 76)})
+BUILDING_TRACK_MAP_2 = {i: 22 - i for i in range(15)}
+BUILDING_TRACK_MAP_2.update({i + 15: 67 - i for i in range(15)})
+BUILDING_TRACK_MAP_2.update({i - 38: i for i in range(68, 76)})
+
+empty_pixel_array = [(0, 0, 0)] * (2 * STICK_LENGTH + 4 * ARC_LENGTH)
+global_pixel_array = []
+
+class TrackLayer(object):
+    def __init__(self, track_map, track_position, colour, is_building):
+        self.track_map = track_map
+        self.track_position = track_position
+        self.colour = colour
+        self.state = 255 if is_building else 0
+        self.is_building = is_building
+
+        self.real_position = track_map[track_position]
+
+        self.track_state = deque([0] * 38)
+
+    def inject(self):
+        self.track_state[self.trac_position] += 1
+
+    def decay(self):
+        if self.state:
+            self.state = int(self.state * 0.75)
+
+    def set_high_state(self):
+        self.state = 255
+
+    def timestep(self):
+        self.track_state.rotate()
+        self.track_state[0] = 0
+
+        if self.is_building:
+            self.decay()
+            if random.random() > 0.95:
+                self.inject()
+
+    def render_layer_track(self):
+        for i, v in enumerate(self.track_state)
+            if v:
+                global_pixel_array[self.track_map[i]] = self.colour
+
+    def render_building_state(self):
+        global_pixel_array[self.track_map[self.track_position]] = (0, self.state, 0)
+
+
+locations = [
+    TrackLayer(BUILDING_TRACK_MAP_1,  7, (0, 200, 200), True),
+    TrackLayer(BUILDING_TRACK_MAP_1,  22, (200, 0, 200), True),
+    TrackLayer(BUILDING_TRACK_MAP_2,  7, (255, 0, 0), True),
+    TrackLayer(BUILDING_TRACK_MAP_2,  22, (0, 0, 255), True),
+]
+
+user_tracks = [
+    TrackLayer(USER_TRACK_MAP_1,  0, (255, 139, 57), False),
+    TrackLayer(USER_TRACK_MAP_2,  0, (255, 139, 57), False),
+]
 
 
 def timestep():
-    track_state[-1] = 0
-    track_state.rotate()
+    for track in user_tracks + locations:
+        track.timestep()
 
 
 def inject(channel):
@@ -80,12 +120,20 @@ def inject(channel):
         '    Detector is {}.'.format('unblocked' if value else 'blocked')
     )
     if not value:
-        track_state[0] += 1
+        for track in user_tracks:
+            track.inject()
 
 
 def render(client):
-    pixels = [(255, 139, 57) if p else (0, 0, 0) for p in track_state]
-    client.put_pixels(pixels)
+    global_pixel_array.clear()
+    global_pixel_array.extend(c for c in empty_pixel_array())
+    for track in user_tracks + locations:
+        track.render_layer_track()
+
+    for track in locations:
+        track.render_building_state()
+
+    client.put_pixels(global_pixel_array)
 
 
 def process_args():
